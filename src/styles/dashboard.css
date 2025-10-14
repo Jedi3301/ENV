@@ -310,9 +310,14 @@
 }
 
 .secondary-metrics {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+}
+
+/* Single column for 3 or fewer items */
+.secondary-metrics:has(.metric-item:nth-child(-n+3):last-child) {
+  grid-template-columns: 1fr;
 }
 
 .metric-item {

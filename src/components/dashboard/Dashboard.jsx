@@ -219,9 +219,12 @@ const Dashboard = () => {
               label: 'Noise Level',
             }}
             secondaryMetrics={[
+              { label: 'NQI', value: airQualityData?.nqi || 'N/A', unit: '' },
               { label: 'PM2.5', value: airQualityData?.pm25?.toFixed(1) || 'N/A', unit: 'µg/m³' },
               { label: 'PM10', value: airQualityData?.pm10?.toFixed(1) || 'N/A', unit: 'µg/m³' },
               { label: 'CO2', value: airQualityData?.co2?.toFixed(0) || 'N/A', unit: 'ppm' },
+              { label: 'CO', value: airQualityData?.co?.toFixed(1) || 'N/A', unit: 'ppm' },
+              { label: 'Smoke', value: airQualityData?.smoke?.toFixed(1) || 'N/A', unit: '' },
             ]}
             status={getAirQualityStatus()}
             onClick={() => setExpandedCard('air')}
