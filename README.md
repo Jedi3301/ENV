@@ -179,6 +179,38 @@ WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile"
 ON user_profiles FOR UPDATE
 USING (auth.uid() = id);
+
+-- Admin can read all profiles
+CREATE POLICY "Admins can read all profiles"
+ON user_profiles FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM user_profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);
+```
+
+#### Database Trigger (Auto-create user profiles)
+Run this to automatically create user profiles when users register:
+
+```sql
+-- Function to create user profile automatically
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.user_profiles (id, email, role, created_at)
+  VALUES (NEW.id, NEW.email, 'user', NOW())
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger on auth.users table
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
 ```
 
 ### 2. React Application Setup

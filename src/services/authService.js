@@ -3,12 +3,34 @@ import { supabase } from './supabaseClient';
 // Sign up new user
 export const signUp = async (email, password) => {
   try {
+    // 1. Create auth user
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
     
     if (error) throw error;
+
+    // 2. Create user profile in user_profiles table
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert([
+          {
+            id: data.user.id,
+            email: data.user.email,
+            role: 'user', // Default role
+            created_at: new Date().toISOString()
+          }
+        ]);
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // Don't fail the signup if profile creation fails
+        // The user can still login, admin just needs to create profile manually
+      }
+    }
+    
     return { data, error: null };
   } catch (error) {
     return { data: null, error: error.message };
