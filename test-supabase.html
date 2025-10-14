@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+        .info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+        .credentials {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #ff9800;
+        }
+        .credentials code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 Supabase Connection Test</h1>
+        
+        <div class="credentials">
+            <strong>Your Configuration:</strong><br>
+            URL: <code>https://izyamdtwnoaatqoqgjra.supabase.co</code><br>
+            Key: <code>eyJhbGciOiJI...7Zg</code> ✓
+        </div>
+
+        <div class="test-section">
+            <h3>Test 1: Insert Air Quality Data</h3>
+            <button onclick="testAirQuality()">🌬️ Send Test Air Quality Data</button>
+            <div id="airResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: Insert Weather Data</h3>
+            <button onclick="testWeather()">🌤️ Send Test Weather Data</button>
+            <div id="weatherResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 3: Insert Water Quality Data</h3>
+            <button onclick="testWater()">💧 Send Test Water Data</button>
+            <div id="waterResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 4: Read Latest Data</h3>
+            <button onclick="readAirQuality()">📖 Read Air Quality Data</button>
+            <button onclick="readWeather()">📖 Read Weather Data</button>
+            <button onclick="readWater()">📖 Read Water Data</button>
+            <div id="readResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://izyamdtwnoaatqoqgjra.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6eWFtZHR3bm9hYXRxb3FnanJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyOTk5NzMsImV4cCI6MjA3NTg3NTk3M30.Q02RRT4oLS7YVdry-6P_aWjVeb9ntoQ20K9p81iF7Zg';
+
+        async function testAirQuality() {
+            const resultDiv = document.getElementById('airResult');
+            resultDiv.innerHTML = '<div class="result info">⏳ Sending data to Supabase...</div>';
+
+            const data = {
+                noise_level: 46.34,
+                nqi: "Low",
+                pm25: 9.3,
+                pm10: 10.6,
+                co2: 616,
+                co: 52,
+                mq7: 2150,
+                smoke: 0.0
+            };
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/air_quality_data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok || response.status === 201) {
+                    resultDiv.innerHTML = `<div class="result success">✅ Success! Air quality data inserted.
+Status: ${response.status}
+Data sent: ${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `<div class="result error">❌ Error: ${response.status}
+${error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testWeather() {
+            const resultDiv = document.getElementById('weatherResult');
+            resultDiv.innerHTML = '<div class="result info">⏳ Sending data to Supabase...</div>';
+
+            const data = {
+                temperature_dht: 25.5,
+                humidity: 65.0,
+                pressure: 1013.25,
+                altitude: 100.5
+            };
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/weather_data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok || response.status === 201) {
+                    resultDiv.innerHTML = `<div class="result success">✅ Success! Weather data inserted.
+Status: ${response.status}
+Data sent: ${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `<div class="result error">❌ Error: ${response.status}
+${error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testWater() {
+            const resultDiv = document.getElementById('waterResult');
+            resultDiv.innerHTML = '<div class="result info">⏳ Sending data to Supabase...</div>';
+
+            const data = {
+                tds: 150.5,
+                turbidity: 5.2,
+                ph_level: 7.1,
+                conductivity: 450.3
+            };
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/water_quality_data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok || response.status === 201) {
+                    resultDiv.innerHTML = `<div class="result success">✅ Success! Water quality data inserted.
+Status: ${response.status}
+Data sent: ${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `<div class="result error">❌ Error: ${response.status}
+${error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        async function readAirQuality() {
+            const resultDiv = document.getElementById('readResult');
+            resultDiv.innerHTML = '<div class="result info">⏳ Reading data from Supabase...</div>';
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/air_quality_data?order=timestamp.desc&limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<div class="result success">✅ Latest Air Quality Data (5 records):
+${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `<div class="result error">❌ Error: ${response.status}
+${error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        async function readWeather() {
+            const resultDiv = document.getElementById('readResult');
+            resultDiv.innerHTML = '<div class="result info">⏳ Reading data from Supabase...</div>';
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/weather_data?order=timestamp.desc&limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<div class="result success">✅ Latest Weather Data (5 records):
+${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `<div class="result error">❌ Error: ${response.status}
+${error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        async function readWater() {
+            const resultDiv = document.getElementById('readResult');
+            resultDiv.innerHTML = '<div class="result info">⏳ Reading data from Supabase...</div>';
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/water_quality_data?order=timestamp.desc&limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<div class="result success">✅ Latest Water Quality Data (5 records):
+${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `<div class="result error">❌ Error: ${response.status}
+${error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
