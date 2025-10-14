@@ -27,11 +27,24 @@ const Dashboard = () => {
   const [waterHistory, setWaterHistory] = useState([]);
   const [expandedCard, setExpandedCard] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
 
   useEffect(() => {
     checkUser();
     fetchInitialData();
-    setupRealtimeSubscriptions();
+    
+    // Setup polling every 5 seconds
+    const pollInterval = setInterval(() => {
+      fetchLatestData();
+    }, 5000);
+
+    // Setup real-time subscriptions
+    const cleanupSubs = setupRealtimeSubscriptions();
+
+    return () => {
+      clearInterval(pollInterval);
+      if (cleanupSubs) cleanupSubs();
+    };
   }, []);
 
   const checkUser = async () => {
@@ -48,40 +61,71 @@ const Dashboard = () => {
     setLoading(true);
 
     // Fetch latest data
-    const { data: weather } = await getLatestWeatherData();
-    const { data: air } = await getLatestAirQualityData();
-    const { data: water } = await getLatestWaterQualityData();
+    const weatherResult = await getLatestWeatherData();
+    const airResult = await getLatestAirQualityData();
+    const waterResult = await getLatestWaterQualityData();
 
-    setWeatherData(weather);
-    setAirQualityData(air);
-    setWaterQualityData(water);
+    setWeatherData(weatherResult?.data || weatherResult);
+    setAirQualityData(airResult?.data || airResult);
+    setWaterQualityData(waterResult?.data || waterResult);
 
     // Fetch history
-    const { data: weatherHist } = await getWeatherHistory(20);
-    const { data: airHist } = await getAirQualityHistory(20);
-    const { data: waterHist } = await getWaterQualityHistory(20);
+    const weatherHistResult = await getWeatherHistory(20);
+    const airHistResult = await getAirQualityHistory(20);
+    const waterHistResult = await getWaterQualityHistory(20);
 
-    setWeatherHistory(weatherHist || []);
-    setAirHistory(airHist || []);
-    setWaterHistory(waterHist || []);
+    setWeatherHistory(weatherHistResult?.data || weatherHistResult || []);
+    setAirHistory(airHistResult?.data || airHistResult || []);
+    setWaterHistory(waterHistResult?.data || waterHistResult || []);
 
     setLoading(false);
   };
 
+  const fetchLatestData = async () => {
+    // Fetch only latest data without loading state (for polling)
+    const weatherResult = await getLatestWeatherData();
+    const airResult = await getLatestAirQualityData();
+    const waterResult = await getLatestWaterQualityData();
+
+    setWeatherData(weatherResult?.data || weatherResult);
+    setAirQualityData(airResult?.data || airResult);
+    setWaterQualityData(waterResult?.data || waterResult);
+
+    // Also update history
+    const weatherHistResult = await getWeatherHistory(20);
+    const airHistResult = await getAirQualityHistory(20);
+    const waterHistResult = await getWaterQualityHistory(20);
+
+    setWeatherHistory(weatherHistResult?.data || weatherHistResult || []);
+    setAirHistory(airHistResult?.data || airHistResult || []);
+    setWaterHistory(waterHistResult?.data || waterHistResult || []);
+    
+    setLastUpdate(new Date());
+  };
+
   const setupRealtimeSubscriptions = () => {
     const weatherSub = subscribeToWeatherData((payload) => {
-      setWeatherData(payload.new);
-      fetchInitialData();
+      console.log('Weather update received:', payload);
+      if (payload.new) {
+        setWeatherData(payload.new);
+        fetchLatestData(); // Refresh all data including history
+      }
     });
 
     const airSub = subscribeToAirQualityData((payload) => {
-      setAirQualityData(payload.new);
-      fetchInitialData();
+      console.log('Air quality update received:', payload);
+      if (payload.new) {
+        setAirQualityData(payload.new);
+        fetchLatestData(); // Refresh all data including history
+      }
     });
 
     const waterSub = subscribeToWaterQualityData((payload) => {
-      setWaterQualityData(payload.new);
-      fetchInitialData();
+      console.log('Water quality update received:', payload);
+      if (payload.new) {
+        setWaterQualityData(payload.new);
+        fetchLatestData(); // Refresh all data including history
+      }
     });
 
     return () => {
@@ -132,6 +176,10 @@ const Dashboard = () => {
         <div className="header-content">
           <h1>🌍 Environmental Monitoring Dashboard</h1>
           <div className="header-actions">
+            <span className="live-indicator">
+              <span className="pulse-dot"></span>
+              Live • Updated {lastUpdate.toLocaleTimeString()}
+            </span>
             <span className="user-info">
               Welcome, {user?.email}
             </span>

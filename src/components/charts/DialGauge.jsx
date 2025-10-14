@@ -1,8 +1,42 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '../../styles/charts.css';
 
 const DialGauge = ({ value, min, max, label, unit, thresholds }) => {
   const canvasRef = useRef(null);
+  const [displayValue, setDisplayValue] = useState(value);
+  const animationRef = useRef(null);
+
+  // Animate value changes
+  useEffect(() => {
+    const startValue = displayValue;
+    const endValue = value;
+    const duration = 800; // 800ms animation
+    const startTime = Date.now();
+
+    const animate = () => {
+      const currentTime = Date.now();
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function for smooth animation
+      const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+      const currentValue = startValue + (endValue - startValue) * easeOutCubic;
+      
+      setDisplayValue(currentValue);
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animate();
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [value, displayValue]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -16,13 +50,13 @@ const DialGauge = ({ value, min, max, label, unit, thresholds }) => {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Calculate angle based on value
-    const percentage = (value - min) / (max - min);
+    // Calculate angle based on displayValue (animated)
+    const percentage = (displayValue - min) / (max - min);
     const startAngle = Math.PI * 0.75;
     const endAngle = Math.PI * 2.25;
     const angle = startAngle + (endAngle - startAngle) * percentage;
 
-    // Determine color based on thresholds
+    // Determine color based on thresholds (use actual value, not animated)
     let color = '#22c55e'; // Green (good)
     let glowColor = 'rgba(34, 197, 94, 0.4)';
     if (thresholds) {
@@ -65,14 +99,14 @@ const DialGauge = ({ value, min, max, label, unit, thresholds }) => {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Draw value text (bright)
+    // Draw value text (bright, animated)
     ctx.fillStyle = '#e0e7ff'; // Bright text
     ctx.font = 'bold 32px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.shadowColor = 'rgba(99, 102, 241, 0.5)';
     ctx.shadowBlur = 10;
-    ctx.fillText(value.toFixed(1), centerX, centerY - 10);
+    ctx.fillText(displayValue.toFixed(1), centerX, centerY - 10);
 
     // Draw unit text (bright)
     ctx.font = '16px Arial';
@@ -88,7 +122,7 @@ const DialGauge = ({ value, min, max, label, unit, thresholds }) => {
     ctx.textAlign = 'right';
     ctx.fillText(max.toString(), canvas.width - 20, canvas.height - 10);
 
-  }, [value, min, max, unit, thresholds]);
+  }, [displayValue, min, max, unit, thresholds, value]);
 
   return (
     <div className="dial-gauge">

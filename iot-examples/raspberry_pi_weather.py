@@ -26,7 +26,7 @@ import adafruit_bmp280
 # Supabase Configuration
 # ------------------------
 SUPABASE_URL = "https://izyamdtwnoaatqoqgjra.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6eWFtZHR3bm9hYXRxb3FnanJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQwOTU2NjksImV4cCI6MjA0OTY3MTY2OX0.SG_3c70O0G5sVuiLDxJbwzeDf2HJoIy78aPxONW-FeI"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6eWFtZHR3bm9hYXRxb3FnanJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyOTk5NzMsImV4cCI6MjA3NTg3NTk3M30.Q02RRT4oLS7YVdry-6P_aWjVeb9ntoQ20K9p81iF7Zg"
 TABLE_NAME = "weather_data"
 
 # ------------------------

@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import DialGauge from '../charts/DialGauge';
 import LineChart from '../charts/LineChart';
 import BarChart from '../charts/BarChart';
 import '../../styles/dashboard.css';
 
-const ExpandedCard = ({ type, data, history, onClose }) => {
+const ExpandedCard = ({ type, data: initialData, history: initialHistory, onClose }) => {
+  const [data, setData] = useState(initialData);
+  const [history, setHistory] = useState(initialHistory);
+
+  // Update local state when props change
+  useEffect(() => {
+    setData(initialData);
+    setHistory(initialHistory);
+  }, [initialData, initialHistory]);
   const renderWeatherContent = () => (
     <div className="expanded-content">
       <div className="gauges-row">
@@ -87,6 +95,27 @@ const ExpandedCard = ({ type, data, history, onClose }) => {
       </div>
 
       <div className="charts-row">
+        <LineChart
+          data={history.map((h, i) => ({ 
+            label: i.toString(), 
+            value: h.noise_level || 0 
+          }))}
+          label="Noise Level History"
+          color="#fb923c"
+          unit="dB"
+        />
+        <LineChart
+          data={history.map((h, i) => ({ 
+            label: i.toString(), 
+            value: h.co2 || 0 
+          }))}
+          label="CO2 History"
+          color="#9c27b0"
+          unit="ppm"
+        />
+      </div>
+
+      <div className="charts-row">
         <BarChart
           data={[
             { label: 'PM2.5', value: data.pm25 || 0 },
@@ -96,12 +125,30 @@ const ExpandedCard = ({ type, data, history, onClose }) => {
           color="#9c27b0"
           unit=" µg/m³"
         />
+        <BarChart
+          data={[
+            { label: 'CO', value: data.co || 0 },
+            { label: 'Smoke', value: data.smoke || 0 },
+            { label: 'MQ7', value: data.mq7 || 0 },
+          ]}
+          label="Gas Sensors"
+          color="#ef4444"
+          unit=""
+        />
       </div>
 
       <div className="data-grid">
         <div className="data-item">
           <span className="data-label">Noise Quality Index</span>
           <span className="data-value">{data.nqi || 'N/A'}</span>
+        </div>
+        <div className="data-item">
+          <span className="data-label">PM2.5</span>
+          <span className="data-value">{data.pm25?.toFixed(1) || 0} µg/m³</span>
+        </div>
+        <div className="data-item">
+          <span className="data-label">PM10</span>
+          <span className="data-value">{data.pm10?.toFixed(1) || 0} µg/m³</span>
         </div>
         <div className="data-item">
           <span className="data-label">MQ7 Sensor</span>

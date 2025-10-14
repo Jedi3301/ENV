@@ -51,7 +51,8 @@ const DeviceMonitor = () => {
 
     // Check Weather Station
     try {
-      const weatherData = await getLatestWeatherData();
+      const result = await getLatestWeatherData();
+      const weatherData = result?.data || result; // Handle both { data } and direct data
       if (weatherData && weatherData.timestamp) {
         const lastUpdate = new Date(weatherData.timestamp);
         const now = new Date();
@@ -66,12 +67,14 @@ const DeviceMonitor = () => {
         updatedDevices[0].status = 'inactive';
       }
     } catch (error) {
+      console.error('Weather check error:', error);
       updatedDevices[0].status = 'error';
     }
 
     // Check Air Quality Monitor
     try {
-      const airData = await getLatestAirQualityData();
+      const result = await getLatestAirQualityData();
+      const airData = result?.data || result; // Handle both { data } and direct data
       if (airData && airData.timestamp) {
         const lastUpdate = new Date(airData.timestamp);
         const now = new Date();
@@ -86,12 +89,14 @@ const DeviceMonitor = () => {
         updatedDevices[1].status = 'inactive';
       }
     } catch (error) {
+      console.error('Air quality check error:', error);
       updatedDevices[1].status = 'error';
     }
 
     // Check Water Quality Monitor
     try {
-      const waterData = await getLatestWaterQualityData();
+      const result = await getLatestWaterQualityData();
+      const waterData = result?.data || result; // Handle both { data } and direct data
       if (waterData && waterData.timestamp) {
         const lastUpdate = new Date(waterData.timestamp);
         const now = new Date();
@@ -106,6 +111,7 @@ const DeviceMonitor = () => {
         updatedDevices[2].status = 'inactive';
       }
     } catch (error) {
+      console.error('Water quality check error:', error);
       updatedDevices[2].status = 'error';
     }
 
